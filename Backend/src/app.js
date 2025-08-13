@@ -1,25 +1,37 @@
-// src/app.js
 const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
-const messageRoutes = require("./routes/messages"); // file name should match exactly (lowercase 'messages')
 
 dotenv.config();
-connectDB(); // connect to MongoDB
+connectDB();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*", methods: ["GET", "POST"] }
+});
 
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use("/api/messages", messageRoutes);
+io.on("connection", (socket) => {
+  console.log("🟢 Client connected", socket.id);
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("Backend is running 🚀");
+  socket.on("typing", ({ to }) => {
+    socket.broadcast.emit("typing", { to });
+  });
+
+  socket.on("disconnect", () => {
+    console.log("🔴 Client disconnected", socket.id);
+  });
 });
 
+app.use("/api/messages", require("./routes/Messages")(io));
+
+app.get("/", (req, res) => res.send("Backend running 🚀"));
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

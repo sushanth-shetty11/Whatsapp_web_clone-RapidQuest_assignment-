@@ -1,16 +1,12 @@
-// src/models/Message.js
 const mongoose = require("mongoose");
 
-const messageSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  meta_msg_id: { type: String },
-  wa_id: { type: String, required: true },
-  name: { type: String },
-  from: { type: String },
-  to: { type: String },
-  timestamp: { type: Date },
-  text: { type: String },
-  status: { type: String, enum: ["sent", "delivered", "read"], default: "sent" }
-}, { collection: "processed_messages" });
+const MessageSchema = new mongoose.Schema({
+  from: String,
+  to: String,
+  name: String,
+  text: String,
+  timestamp: Date,
+  status: String
+});
 
-module.exports = mongoose.model("Message", messageSchema);
+module.exports = mongoose.model("Message", MessageSchema);
